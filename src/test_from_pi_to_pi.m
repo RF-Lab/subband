@@ -17,20 +17,21 @@ SNR = E ./ sigma ;
 
 %w1 = -pi; w2 = pi;
 freq_range = 0.1; w1 = (fs - freq_range)/fd * 2 *pi; w2 = (fs + freq_range)/fd * 2 *pi ;
-freq_range_2 = 1; w1_2 = (fs - freq_range_2)/fd * 2 *pi; w2_2 = (fs + freq_range_2)/fd * 2 *pi ;
+freq_range_2 = 1; w1_2 = (fs + freq_range_2)/fd * 2 *pi; w2_2 = (fs + 2*freq_range_2)/fd * 2 *pi ;
+%omega_range=0.5*pi; w1_2 = (fs)/fd * 2 *pi  - omega_range; w2_2 = (fs)/fd * 2 *pi + 3*omega_range;
 
 % get sub band coefficients
-F0 = get_sb_matrix_1(N, w1, w2, 0) ;
-F1 = get_sb_matrix_1(N, w1, w2, 1) ;
-F2 = get_sb_matrix_1(N, w1, w2, 2) ;
+F0 = get_sb_matrix_1(N, w1, w2, 0) 
+F1 = get_sb_matrix_1(N, w1, w2, 1) 
+F2 = get_sb_matrix_1(N, w1, w2, 2) 
 
-F0_2 = get_sb_matrix_1(N, w1_2, w2_2, 0) ;
-F1_2 = get_sb_matrix_1(N, w1_2, w2_2, 1) ;
-F2_2 = get_sb_matrix_1(N, w1_2, w2_2, 2) ;
+F0_2 = get_sb_matrix_1(N, w1_2, w2_2, 0) 
+F1_2 = get_sb_matrix_1(N, w1_2, w2_2, 1) 
+F2_2 = get_sb_matrix_1(N, w1_2, w2_2, 2) 
 
-F0_pi = get_sb_matrix_1(N, -pi, pi, 0) ;
-F1_pi = get_sb_matrix_1(N, -pi, pi, 1) ;
-F2_pi = get_sb_matrix_1(N, -pi, pi, 2) ;
+F0_pi = get_sb_matrix_1(N, -pi, pi, 0) 
+F1_pi = get_sb_matrix_1(N, -pi, pi, 1) 
+F2_pi = get_sb_matrix_1(N, -pi, pi, 2) 
 
 experiment_size = 1000;
 freq_acf = zeros(length(sigma), 1);
@@ -48,7 +49,7 @@ for snr_range = 1:length(sigma)
         x = s + sqrt(sigma(snr_range)) * randn(1, length(s));
 
         %% acf
-        X = fft(x, 2*N);
+        X = fft(x, 1*N);
         XX = X .* conj(X);
         acf_full = ifft(XX);
         %acf_full = [x.'*x, x.' * circshift(x, 1), x.' * circshift(x, 2)] / N;
@@ -83,7 +84,7 @@ for snr_range = 1:length(sigma)
         r_pi = [x.' * F0_pi * x, x.' * F1_pi * x, x.' * F2_pi * x] / (2*pi);
                 
         sub_pi = ar_model([r_pi(1); r_pi(2); r_pi(3)]) ;
-        [poles1, omega0_sub_pi, Hjw0_1] = get_ar_pole(sub_pi) ;
+        [poles1, omega0_sub_pi, Hjw0_1_pi] = get_ar_pole(sub_pi) ;
         fs_sub_pi_est = omega0_sub_pi*fd/2/pi;
         freq_sub_pi(snr_range) = freq_sub_pi(snr_range) + (fs_sub_pi_est)^2;
         var_sub_pi(snr_range) = var_sub_pi(snr_range) + (fs_sub_pi_est - fs)^2;

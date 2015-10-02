@@ -16,22 +16,22 @@ sigma = E ./ (10 .^ (SNR_dB./10)) ;
 SNR = E ./ sigma ;
 
 %w1 = -pi; w2 = pi;
-freq_range = 0.1; w1 = (fs - freq_range)/fd * 2 *pi; w2 = (fs + freq_range)/fd * 2 *pi ;
-freq_range_2 = 1; w1_2 = (fs + freq_range_2)/fd * 2 *pi; w2_2 = (fs + 2*freq_range_2)/fd * 2 *pi ;
+freq_range = 1; w1 = (fs + freq_range)/fd * 2 *pi; 
+freq_range_2 = 1; w1_2 = (fs - freq_range_2)/fd * 2 *pi; 
 %omega_range=0.5*pi; w1_2 = (fs)/fd * 2 *pi  - omega_range; w2_2 = (fs)/fd * 2 *pi + 3*omega_range;
 
 % get sub band coefficients
-F0 = get_sb_matrix_1(N, w1, w2, 0) 
-F1 = get_sb_matrix_1(N, w1, w2, 1) 
-F2 = get_sb_matrix_1(N, w1, w2, 2) 
+F0 = get_sb_matrix_1(N, w1, 0) 
+F1 = get_sb_matrix_1(N, w1, 1) 
+F2 = get_sb_matrix_1(N, w1, 2) 
 
-F0_2 = get_sb_matrix_1(N, w1_2, w2_2, 0) 
-F1_2 = get_sb_matrix_1(N, w1_2, w2_2, 1) 
-F2_2 = get_sb_matrix_1(N, w1_2, w2_2, 2) 
+F0_2 = get_sb_matrix_1(N, w1_2, 0) 
+F1_2 = get_sb_matrix_1(N, w1_2, 1) 
+F2_2 = get_sb_matrix_1(N, w1_2, 2) 
 
-F0_pi = get_sb_matrix_1(N, -pi, pi, 0) 
-F1_pi = get_sb_matrix_1(N, -pi, pi, 1) 
-F2_pi = get_sb_matrix_1(N, -pi, pi, 2) 
+F0_pi = get_sb_matrix_1(N, pi, 0) 
+F1_pi = get_sb_matrix_1(N, pi, 1) 
+F2_pi = get_sb_matrix_1(N, pi, 2) 
 
 experiment_size = 1000;
 freq_acf = zeros(length(sigma), 1);
@@ -104,14 +104,14 @@ end
 
 subplot(2, 1, 1),
     plot(SNR_dB, freq_acf, '-rx', SNR_dB, freq_sub, '-go',  SNR_dB, freq_sub_2, '-b+', SNR_dB, freq_sub_pi, '-kd');
-    legend('acf', sprintf('sub band from %.2f Hz to %.2f Hz', w1*fd/2/pi, w2*fd/2/pi), sprintf('sub band from %.2f Hz to %.2f Hz', w1_2*fd/2/pi, w2_2*fd/2/pi),'sub band - \pi to \pi')
+    legend('acf', sprintf('sub band from %.2f Hz', w1*fd/2/pi), sprintf('sub band from %.2f Hz', w1_2*fd/2/pi),'sub band - \pi to \pi')
     xlabel('SNR, dB'), ylabel('Freq, Hz');
 
-title(sprintf('Fs=%.2f Hz\t Fd=%.2f Hz', fs, fd));
+title(sprintf('Fs=%.2f Hz\t Fd=%.2f Hz\t', fs, fd));
     
 subplot(2, 1, 2);
     plot(SNR_dB, var_acf, '-rx', SNR_dB, var_sub, '-go',  SNR_dB, var_sub_2, '-b+', SNR_dB, var_sub_pi, '-kd');
-    legend('acf', sprintf('sub band from %.2f Hz to %.2f Hz', w1*fd/2/pi, w2*fd/2/pi), sprintf('sub band from %.2f Hz to %.2f Hz', w1_2*fd/2/pi, w2_2*fd/2/pi),'sub band - \pi to \pi')
+    legend('acf', sprintf('sub band from %.2f Hz', w1*fd/2/pi), sprintf('sub band from %.2f Hz', w1_2*fd/2/pi),'sub band - \pi to \pi')
     xlabel('SNR, dB'), ylabel('Variance');
 
 %title(sprintf('From %.2f Hz to %.2f Hz', w1*fd/2/pi, w2*fd/2/pi))

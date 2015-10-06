@@ -35,6 +35,8 @@ F2_pi = get_sb_matrix_1(N, pi, 2);
 
 freq_acf = zeros(length(sigma), 1);
 var_acf = zeros(length(sigma), 1);
+freq_acf_2nd = zeros(length(sigma), 1);
+var_acf_2nd = zeros(length(sigma), 1);
 freq_sub = zeros(length(sigma), 1);
 var_sub = zeros(length(sigma), 1);
 freq_sub_2 = zeros(length(sigma), 1);
@@ -63,14 +65,24 @@ parfor snr_range = 1:length(sigma)
         XX = X .* conj(X);
         acf_full = ifft(XX);
         %acf_full = [x.'*x, x.' * circshift(x, 1), x.' * circshift(x, 2)] / N;
-
-        %plot(acf_full(1:20));
+        
         acf = ar_model([acf_full(1); acf_full(2); acf_full(3)]) ;
         [poles1, omega0_acf, Hjw0_1] = get_ar_pole(acf) ;
         fs_acf_est = omega0_acf*fd/2/pi;
         freq_acf(snr_range) = freq_acf(snr_range) + (fs_acf_est)^2;
         var_acf(snr_range) = var_acf(snr_range) + (fs_acf_est - fs)^2;
-
+        
+        %% acf quadruple
+        X_quadruple = fft(x, 4*N);
+        XX = X .* conj(X);
+        acf_quadruple = ifft(XX.^4);
+        
+        acf = ar_model([acf_quadruple(1); acf_quadruple(2); acf_quadruple(3)]) ;
+        [poles1, omega0_acf, Hjw0_1] = get_ar_pole(acf) ;
+        fs_acf_est_2nd = omega0_acf*fd/2/pi;
+        freq_acf_2nd(snr_range) = freq_acf_2nd(snr_range) + (fs_acf_est_2nd)^2;
+        var_acf_2nd(snr_range) = var_acf_2nd(snr_range) + (fs_acf_est_2nd - fs)^2;
+        
         % sub band
         x = x.';
         r = [x.' * F0 * x, x.' * F1 * x, x.' * F2 * x] / (2*pi);
@@ -111,12 +123,14 @@ parfor snr_range = 1:length(sigma)
     end
     
     freq_acf(snr_range)  = sqrt(freq_acf(snr_range)  / experiment_size);
+    freq_acf_2nd(snr_range)  = sqrt(freq_acf_2nd(snr_range)  / experiment_size);
     freq_sub(snr_range)  = sqrt(freq_sub(snr_range)  / experiment_size);
     freq_sub_2(snr_range)  = sqrt(freq_sub_2(snr_range)  / experiment_size);
     freq_sub_pi(snr_range)  = sqrt(freq_sub_pi(snr_range)  / experiment_size);
     freq_sub_2nd(snr_range) = sqrt(freq_sub_2nd(snr_range) / experiment_size);
     
     var_acf(snr_range)  = var_acf(snr_range)  / experiment_size;
+    var_acf_2nd(snr_range)  = var_acf_2nd(snr_range)  / experiment_size;
     var_sub(snr_range)  = var_sub(snr_range)  / experiment_size;
     var_sub_2(snr_range)  = var_sub_2(snr_range)  / experiment_size;
     var_sub_pi(snr_range)  = var_sub_pi(snr_range)  / experiment_size;    
@@ -127,9 +141,10 @@ end
 
 
 subplot(2, 1, 1),
-    plot(SNR_dB, freq_acf, '-rx', SNR_dB, freq_sub, '-go',  SNR_dB, freq_sub_2, '-b+', SNR_dB, freq_sub_pi, '-kd', SNR_dB, freq_sub_2nd, '-cs');
+    plot(SNR_dB, freq_acf, '-rx', SNR_dB, freq_acf_2nd, '-mv', SNR_dB, freq_sub, '-go',  SNR_dB, freq_sub_2, '-b+', SNR_dB, freq_sub_pi, '-kd', SNR_dB, freq_sub_2nd, '-cs');
     grid on;
     legend('acf', ...
+        'acf 4N, 4th order', ...
         sprintf('sub band from %.2f Hz', w1*fd/2/pi), ...
         sprintf('sub band from %.2f Hz', w1_2*fd/2/pi), ...
         'sub band - \pi to \pi', ...
@@ -139,9 +154,10 @@ subplot(2, 1, 1),
 title(sprintf('Fs=%.2f Hz\t Fd=%.2f Hz\t', fs, fd));
     
 subplot(2, 1, 2);
-    plot(SNR_dB, var_acf, '-rx', SNR_dB, var_sub, '-go',  SNR_dB, var_sub_2, '-b+', SNR_dB, var_sub_pi, '-kd', SNR_dB, var_sub_2nd, '-cs');
+    plot(SNR_dB, var_acf, '-rx', SNR_dB, var_acf_2nd, '-mv', SNR_dB, var_sub, '-go',  SNR_dB, var_sub_2, '-b+', SNR_dB, var_sub_pi, '-kd', SNR_dB, var_sub_2nd, '-cs');
     grid on;
     legend('acf', ...
+        'acf 4N, 4th order', ...
         sprintf('sub band from %.2f Hz', w1*fd/2/pi), ...
         sprintf('sub band from %.2f Hz', w1_2*fd/2/pi), ...
         'sub band - \pi to \pi', ...
